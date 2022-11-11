@@ -2,7 +2,6 @@ import pygame
 import cv2
 import random, time, os
 import mediapipe as mp
-import numpy
 
 # color codes
 RED = (255, 0, 0)
@@ -147,10 +146,10 @@ def main():
         draw_stickman()
 
         # draw swords
-        left_sword.x = leftwrist_x
-        left_sword.y = leftwrist_y - SWORD_HEIGHT
-        right_sword.x = rightwrist_x - SWORD_WIDTH
-        right_sword.y = rightwrist_y - SWORD_HEIGHT
+        left_sword.x = leftwrist_x - 10
+        left_sword.y = leftwrist_y - SWORD_HEIGHT + 10
+        right_sword.x = rightwrist_x - SWORD_WIDTH + 10
+        right_sword.y = rightwrist_y - SWORD_HEIGHT + 10
         window.blit(LEFT_SWORD, (left_sword.x, left_sword.y))
         window.blit(RIGHT_SWORD, (right_sword.x, right_sword.y))
 
@@ -176,6 +175,7 @@ def main():
 
             score += 1
             DEVIL_SPEED += 3 # increase devil speed with every collision
+
 
 if __name__ == "__main__":
     main()
