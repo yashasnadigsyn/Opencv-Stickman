@@ -29,9 +29,10 @@ DEVIL_SPEED = INITIAL_DEVIL_SPEED
 MAX_DEVIL_SPEED = DEVIL_SPEED + 30
 
 
-HEART_FULL_X, HEART_FULL_Y = 20,20
+HEART_FULL_X, HEART_FULL_Y = 10,10
 PLAYER_HEALTH_FULL = pygame.image.load(os.path.join("Assets", "heartfull.png"))
-PLAYER_HEALTH = pygame.transform.scale(PLAYER_HEALTH_FULL, (DEVIL_WIDTH, DEVIL_HEIGHT))
+PLAYER_HEALTH = pygame.transform.scale(PLAYER_HEALTH_FULL, (90, 90))
+
 
 # custom pygame events
 DEVIL_HIT = pygame.USEREVENT + 1
@@ -50,11 +51,11 @@ pygame.mouse.set_visible(False) # hide mouse
 FPS = 30
 clock = pygame.time.Clock()
 # initialize pygame font
-STORYFONT = pygame.font.Font(os.path.join("Assets", "font", "PixelScriptRegular-4B83W.ttf"), 30)
+FONT = pygame.font.Font(os.path.join("Assets", "font", "OpenSans-VariableFont_wdth_wght.ttf"), 30)
+SCOREFONT = pygame.font.Font(os.path.join("Assets", "font", "OpenSans-VariableFont_wdth_wght.ttf"), 20)
 with open("story.txt", "r") as f:
     story_text = f.read().split('\n')
-story_pages = [STORYFONT.render(page, 1, WHITE) for page in story_text]
-#story = STORYFONT.render(story_text, 1, WHITE)
+story_pages = [FONT.render(page, 1, WHITE) for page in story_text]
 
 # mediapipe module load for pose
 mpPose = mp.solutions.pose
@@ -153,12 +154,16 @@ def draw_stickman(): # tracks movements and draws stickman
 
 def draw_window(left_sword, right_sword, devil, devil_right):
     # draw health hearts
-    global health
+    global health, score
 
     heart_padding_x = 0
     for i in range(health):
         window.blit(PLAYER_HEALTH, (HEART_FULL_X + heart_padding_x, HEART_FULL_Y))
-        heart_padding_x += 60
+        heart_padding_x += 40
+    
+    # draw score
+    score_text = SCOREFONT.render(f"Score: {score}", 1, WHITE)
+    window.blit( score_text, (WIDTH - score_text.get_width() - 10, 10) )
 
     # draw stickman
     draw_stickman()
@@ -225,7 +230,6 @@ def main():
     page = 0
     tellstory = True
     while(tellstory):
-        clock.tick(FPS)
 
         if page == len(story_pages):
             window.fill((0,0,0))
