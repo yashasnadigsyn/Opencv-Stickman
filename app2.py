@@ -2,6 +2,7 @@ import pygame
 import cv2
 import random, time, os
 import mediapipe as mp
+from math import sqrt
 
 # color codes
 RED = (255, 0, 0)
@@ -12,7 +13,6 @@ SWORD_WIDTH, SWORD_HEIGHT = 100, 100
 SWORD_IMAGE = pygame.transform.rotate(
     pygame.image.load(os.path.join("Assets", "fantasy-sword.png")),
     90)
-
 LEFT_SWORD = pygame.transform.scale(SWORD_IMAGE, (SWORD_WIDTH, SWORD_HEIGHT))
 RIGHT_SWORD = pygame.transform.scale(
     pygame.transform.flip(SWORD_IMAGE, True, False),
@@ -20,16 +20,18 @@ RIGHT_SWORD = pygame.transform.scale(
 
 
 DEVIL_WIDTH, DEVIL_HEIGHT = 120, 120
-HEART_FULL_X, HEART_FULL_Y = 20,20
 DEVIL_IMAGE = pygame.image.load(os.path.join("Assets", "devil.png"))
-PLAYER_HEALTH_FULL = pygame.image.load(os.path.join("Assets", "heartfull.png"))
-PLAYER_HEALTH = pygame.transform.scale(PLAYER_HEALTH_FULL, (DEVIL_WIDTH, DEVIL_HEIGHT))
 DEVIL = pygame.transform.scale(
     DEVIL_IMAGE,
     (DEVIL_WIDTH, DEVIL_HEIGHT))
 INITIAL_DEVIL_SPEED = 7
 DEVIL_SPEED = INITIAL_DEVIL_SPEED
 MAX_DEVIL_SPEED = DEVIL_SPEED + 30
+
+
+HEART_FULL_X, HEART_FULL_Y = 20,20
+PLAYER_HEALTH_FULL = pygame.image.load(os.path.join("Assets", "heartfull.png"))
+PLAYER_HEALTH = pygame.transform.scale(PLAYER_HEALTH_FULL, (DEVIL_WIDTH, DEVIL_HEIGHT))
 
 # custom pygame events
 DEVIL_HIT = pygame.USEREVENT + 1
@@ -61,8 +63,12 @@ colorforstickman = (7, 242, 207)
 
 score = 0 # game score
 
-health = 3 # miss the devils 3 times and its game over
+health = 5 # miss the devils 3 times and its game over
 
+
+def distance(x1, y1, x2, y2):
+    # returns integer distance between two points
+    return int( sqrt((x2 - x1)**2 + (y2 - y1)**2) )
 
 leftwrist_x, leftwrist_y = 0, 0 # making these global because they're needed for swords AND player body collision rects
 rightwrist_x, rightwrist_y = 0, 0
@@ -123,8 +129,10 @@ def draw_stickman():
         pygame.draw.circle(window, colorforstickman, (leftankle_x, leftankle_y), 5)
         pygame.draw.circle(window, colorforstickman, (rightankle_x, rightankle_y), 5)
 
+        # arms
         pygame.draw.line(window, colorforstickman, (middleshoulder_x, middleshoulder_y), (rightwrist_x, rightwrist_y), 2)
         pygame.draw.line(window, colorforstickman, (middleshoulder_x, middleshoulder_y), (leftwrist_x, leftwrist_y), 2)
+
         pygame.draw.line(window, colorforstickman, (middleshoulder_x, middleshoulder_y), (middlehip_x, middlehip_y), 2)
 
         pygame.draw.line(window, colorforstickman, (middlehip_x, middlehip_y), (leftankle_x, leftankle_y))
@@ -139,20 +147,11 @@ def draw_stickman():
 def draw_window(left_sword, right_sword, devil, devil_right):
     # draw health bar
     global health
-    if health == 3:
-        window.blit(PLAYER_HEALTH, (HEART_FULL_X, HEART_FULL_Y))
-        window.blit(PLAYER_HEALTH, (HEART_FULL_X+60, HEART_FULL_Y))
-        window.blit(PLAYER_HEALTH, (HEART_FULL_X+120, HEART_FULL_Y))
-    
-    if health == 2:
-        window.blit(PLAYER_HEALTH, (HEART_FULL_X, HEART_FULL_Y))
-        window.blit(PLAYER_HEALTH, (HEART_FULL_X+60, HEART_FULL_Y))
 
-    if health == 1:
-        window.blit(PLAYER_HEALTH, (HEART_FULL_X, HEART_FULL_Y))  
-    
-    if health == 0:
-        exit()
+    heart_padding_x = 0
+    for i in range(health):
+        window.blit(PLAYER_HEALTH, (HEART_FULL_X + heart_padding_x, HEART_FULL_Y))
+        heart_padding_x += 60
 
     # draw stickman
     draw_stickman()
@@ -279,6 +278,9 @@ def main():
             INITIAL_DEVIL_SPEED += 2 # increase game hardness by incrementing initial devil speed
             DEVIL_SPEED = INITIAL_DEVIL_SPEED
             #boss_level = True
+        
+        if health == 0:
+            break
             
 
 
