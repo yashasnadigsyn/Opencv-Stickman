@@ -42,3 +42,6 @@ python app2.py
 - [x] score meter (score variable is there. just need meter)
 - [ ] game over screen
 - [ ] Provide Windows executables
+
+## Credits
+- [Fantastical Dragon Image by **liuzishan** on Freepik](https://www.freepik.com/free-photo/fantastic-illustration-ancient-chinese-themes_14541139.htm#query=monster&position=25&from_view=search&track=sph)
