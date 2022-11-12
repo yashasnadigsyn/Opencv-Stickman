@@ -1,5 +1,7 @@
 # OpenCV-Stickman
 
+![cover](./Assets/other/cover.png)
+
 > It is a common tale from the twenty-first century...
 > Virtual worlds remain as distant as ever, while their need keeps on increasing.
 > Here is something that doesn't fulfill that promise, but provides, at least to its creators,
