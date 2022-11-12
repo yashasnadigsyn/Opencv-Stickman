@@ -11,8 +11,7 @@ Ever wanted to play a VR like game without VR?
 or tired of playing the same old type of games?  
 How about doing exercise while playing games?  
 
-TheAiPeople bring you a stickman based game  
-where you can play by using your whole body.  
+TheAiPeople bring you a stickman based game where you can play the game using your whole body.  
 
 
 ## First run
