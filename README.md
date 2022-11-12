@@ -1,11 +1,43 @@
-## OpenCV-Stickman
+# OpenCV-Stickman
 
-press Q to exit
+> It is a common tale from the twenty-first century...
+> Virtual worlds remain as distant as ever, while their need keeps on increasing.
+> Here is something that doesn't fulfill that promise, but provides, at least to its creators,
+> a small part of the pleasure promised by full virtual reality.
 
-### TODO:
-- [ ] limit stickman's height and length of arms
+Ever wanted to play a VR like game without VR?  
+or tired of playing the same old type of games?  
+How about doing exercise while playing games?  
+
+TheAiPeople bring you a stickman based game  
+where you can play by using your whole body.  
+
+
+## First run
+```bash
+git clone https://github.com/yashasnadigsyn/Opencv-Stickman/tree/main
+cd Opencv-Stickman
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+python app2.py
+```
+
+**NOTE: If you're using another shell like `fish`, please run the apprpriate activation script from `venv/bin` in step 4.**
+
+To play the game any time after the first run, just go into the game directory and run the following commands:
+```bash
+source venv/bin/activate
+python app2.py
+```
+
+## Instructions
+- press Q to exit
+
+## TODO:
 - [x] a way for the demons to slow down after a certain speed is reached, and do _something_
-- [ ] when the above happens, a boss will appear. randomly-colored, and will keep bouncing around the screen and moving closer to the player
-- [ ] after the boss fight, the _something_ should occur - could be different types of demons that are harder to hit
+- [ ] boss fights (?)
 - [x] player health system
-- [ ] score meter (score variable is there. just need meter)
+- [x] score meter (score variable is there. just need meter)
+- [ ] game over screen
+- [ ] Provide Windows executables
