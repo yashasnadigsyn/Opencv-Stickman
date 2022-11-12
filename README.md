@@ -33,7 +33,7 @@ python app2.py
 
 ## Instructions
 You just need to avoid the demons and hit them with the swords. There aren't any menus or controls (for now at least). There's just one:  
-pressing the **Q** key force-exits the game.
+pressing the **Q** key force-exits the game. (doesn't work during the initial story)
 
 ## Credits
 - Background Track "The Black Waltz" by Scott Buckley
