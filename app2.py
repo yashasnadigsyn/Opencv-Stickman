@@ -91,7 +91,7 @@ score = 0 # game score
 
 health = 5 # miss the devils 3 times and its game over
 
-BOSS_TRIGGER_SCORE = 30 # TODO: change to 50 later
+BOSS_TRIGGER_SCORE = 20 # at every increment of 20 in score, boss level is triggered
 
 
 def distance(x1, y1, x2, y2):
@@ -286,7 +286,7 @@ def main():
         window.blit(story_pages[page], (10, 10))
         pygame.display.update()
 
-        time.sleep(5)
+        time.sleep(3)
         page += 1
 
     # main game loop
