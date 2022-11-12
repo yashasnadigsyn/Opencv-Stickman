@@ -65,9 +65,11 @@ clock = pygame.time.Clock()
 # initialize pygame font
 FONT = pygame.font.Font(os.path.join("Assets", "font", "OpenSans-VariableFont_wdth_wght.ttf"), 30)
 SCOREFONT = pygame.font.Font(os.path.join("Assets", "font", "OpenSans-VariableFont_wdth_wght.ttf"), 20)
+
 with open("story.txt", "r") as f:
     story_text = f.read().split('\n')
 story_pages = [FONT.render(page, 1, WHITE) for page in story_text]
+
 # game over screen
 GAME_OVER = pygame.transform.scale(
     pygame.image.load(os.path.join("Assets", "game_over.png")),
@@ -286,7 +288,7 @@ def main():
         window.blit(story_pages[page], (10, 10))
         pygame.display.update()
 
-        time.sleep(3)
+        time.sleep(3.5)
         page += 1
 
     # main game loop
