@@ -18,6 +18,15 @@ RIGHT_SWORD = pygame.transform.scale(
     pygame.transform.flip(SWORD_IMAGE, True, False),
     (SWORD_WIDTH, SWORD_HEIGHT))
 
+BOSS_WIDTH, BOSS_HEIGHT = 200, 200
+BOSS = pygame.transform.scale(
+    pygame.image.load(os.path.join("Assets", "dragon-boss.png")),
+    (BOSS_WIDTH, BOSS_HEIGHT))
+INITIAL_BOSS_SPEED = 10
+BOSS_SPEED = INITIAL_BOSS_SPEED
+BOSS_INITIAL_HEALTH = 10
+BOSS_HEALTH = BOSS_INITIAL_HEALTH
+
 
 DEVIL_WIDTH, DEVIL_HEIGHT = 120, 120
 DEVIL_IMAGE = pygame.image.load(os.path.join("Assets", "devil.png"))
@@ -37,6 +46,9 @@ PLAYER_HEALTH = pygame.transform.scale(PLAYER_HEALTH_FULL, (90, 90))
 # custom pygame events
 DEVIL_HIT = pygame.USEREVENT + 1
 DEVIL_MISS = pygame.USEREVENT + 2
+BOSS_HIT = pygame.USEREVENT + 3
+BOSS_HIT_PLAYER = pygame.USEREVENT + 4
+BOSS_REVERSE_DIRECTION = pygame.USEREVENT + 5
 
 # initialize pygame
 pygame.init()
@@ -78,6 +90,8 @@ colorforstickman = (7, 242, 207)
 score = 0 # game score
 
 health = 5 # miss the devils 3 times and its game over
+
+BOSS_TRIGGER_SCORE = 30 # TODO: change to 50 later
 
 
 def distance(x1, y1, x2, y2):
@@ -158,7 +172,7 @@ def draw_stickman(): # tracks movements and draws stickman
         pygame.draw.circle(window, RED, (leftwrist_x, leftwrist_y), 10) # left hand
 
 
-def draw_window(left_sword, right_sword, devil, devil_right):
+def draw_window(left_sword, right_sword, devil, devil_right, boss_level=False):
     # draw health hearts
     global health, score
 
@@ -182,53 +196,79 @@ def draw_window(left_sword, right_sword, devil, devil_right):
     window.blit(LEFT_SWORD, (left_sword.x, left_sword.y))
     window.blit(RIGHT_SWORD, (right_sword.x, right_sword.y))
 
-    # draw devil
-    if devil_right:
-        devil.x += DEVIL_SPEED
+    if boss_level:
+        # draw boss
+        pass
     else:
-        devil.x -= DEVIL_SPEED
-    window.blit(DEVIL, (devil.x, devil.y))
+        # draw devil
+        if devil_right:
+            devil.x += DEVIL_SPEED
+        else:
+            devil.x -= DEVIL_SPEED
+        window.blit(DEVIL, (devil.x, devil.y))
 
 
-def devil_collision_detect(devil, left_sword, right_sword):
+def devil_collision_detect(devil, left_sword, right_sword, boss_level):
     # player's body collision vars
     global nose_x, nose_y
     global middleshoulder_x, middleshoulder_y
 
     # checking if devil collides with either sword
     if devil.colliderect(left_sword) or devil.colliderect(right_sword):
-        pygame.event.post(
-            pygame.event.Event(DEVIL_HIT)
-        )
+        if boss_level:
+            pygame.event.post(
+                pygame.event.Event(BOSS_HIT)
+            )
+        else:
+            pygame.event.post(
+                pygame.event.Event(DEVIL_HIT)
+            )
     
     # checking if devil goes off the screen
-    elif devil.x > WIDTH or devil.x < -DEVIL_WIDTH:
-        pygame.event.post(
-            pygame.event.Event(DEVIL_MISS)
-        )
+    if boss_level:
+        if devil.x > WIDTH or devil.x < -BOSS_WIDTH:
+            pygame.event.post(
+                pygame.event.Event(BOSS_REVERSE_DIRECTION)
+            )
+    else:
+        if devil.x > WIDTH or devil.x < -DEVIL_WIDTH:
+            pygame.event.post(
+                pygame.event.Event(DEVIL_MISS)
+            )
 
     # devil collision with player's face, arms or neck
     # face
     face = pygame.Rect(nose_x - 50, nose_y - 50, 100, 100)
-    #pygame.draw.rect(window, WHITE, face, 1)
 
     if devil.colliderect(face):
-        pygame.event.post(
-            pygame.event.Event(DEVIL_MISS) # can be used because DEVIL_MISS reduces health and respawns a devil
-        )
+        if boss_level:
+            pygame.event.post(
+                pygame.event.Event(BOSS_HIT_PLAYER)
+            )
+        else:
+            pygame.event.post(
+                pygame.event.Event(DEVIL_MISS) # can be used because DEVIL_MISS reduces health and respawns a devil
+            )
     
     # neck and arms
     hit_neck_or_arms = devil.clipline((nose_x, nose_y), (middleshoulder_x, middleshoulder_y)) or devil.clipline((middleshoulder_x, middleshoulder_y), (leftwrist_x, leftwrist_y)) or devil.clipline((middleshoulder_x, middleshoulder_y), (rightwrist_x, rightwrist_y))
 
     if hit_neck_or_arms:
-        pygame.event.post(
-            pygame.event.Event(DEVIL_MISS)
-        )
+        if boss_level:
+            pygame.event.post(
+                pygame.event.Event(BOSS_HIT_PLAYER)
+            )
+        else:
+            pygame.event.post(
+                pygame.event.Event(DEVIL_MISS)
+            )
     
 
 
 def main():
-    global score, health, DEVIL_SPEED, MAX_DEVIL_SPEED, INITIAL_DEVIL_SPEED
+    global score, health
+    global DEVIL_SPEED, MAX_DEVIL_SPEED, INITIAL_DEVIL_SPEED
+    global BOSS_WIDTH, BOSS_HEIGHT, BOSS_SPEED, BOSS_INITIAL_HEALTH, BOSS_HEALTH
     global nose_x, nose_y
     global story_pages
 
@@ -258,8 +298,14 @@ def main():
     devil = pygame.Rect(0, 350, DEVIL_WIDTH, DEVIL_HEIGHT)
     devil.x = -DEVIL_WIDTH
     devil_right = True # to track if devil is moving right or left
-    running = True
 
+    boss_level = True # to track if on boss level
+    boss = pygame.Rect(0, 20, BOSS_WIDTH, BOSS_HEIGHT)
+    boss.x = -BOSS_WIDTH
+    boss.y = 0
+    boss_right = True
+
+    running = True
     while (running):
         clock.tick(FPS)
 
@@ -299,26 +345,91 @@ def main():
                 devil.y = random.randrange(0, 351)
 
                 DEVIL_SPEED += 2 # increase devil speed with every collision
+            
+            if event.type == BOSS_HIT:
+                boss.x = random.randrange(0, WIDTH - BOSS_WIDTH)
+                BOSS_HEALTH -= 1
+                BOSS_SPEED += 2
 
+                if BOSS_HEALTH <= 0:
+                    boss_level = False
+
+                    boss.y = 0
+
+                    BOSS_HEALTH = BOSS_INITIAL_HEALTH + (score % BOSS_TRIGGER_SCORE)
+                    BOSS_SPEED = INITIAL_BOSS_SPEED + (score % BOSS_TRIGGER_SCORE)
+
+                    score += 1
+
+                    if health + 2 > 5:
+                        health = 5
+                    else:
+                        health += 2
+            
+            if event.type == BOSS_HIT_PLAYER:
+                boss.x = random.randrange(0, WIDTH - BOSS_WIDTH)
+                BOSS_SPEED += 1
+                health -= 2
+            
+            if event.type == BOSS_REVERSE_DIRECTION:
+                pass # handled manually below. TODO: remove this event later
 
         window.fill((0,0,0)) # clearing the pygame display
     
         # draws the whole game window
-        draw_window(left_sword, right_sword, devil, devil_right)
+        draw_window(left_sword, right_sword, devil, devil_right, boss_level)
 
-        # detect collisions with the devil and post HIT or MISS events
-        devil_collision_detect(devil, left_sword, right_sword)
+        # check if boss level reached
+        if score % BOSS_TRIGGER_SCORE == 0:
+            if score == 0:
+                boss_level = False
+            else:
+                boss_level = True
+
+        # boss level or normal devils
+        if boss_level:
+            devil_collision_detect(boss, left_sword, right_sword, boss_level)
+        else:
+            # detect collisions with the devil and post HIT or MISS events
+            devil_collision_detect(devil, left_sword, right_sword, boss_level)
+
+            if DEVIL_SPEED >= MAX_DEVIL_SPEED: # if devil speed reaches max devil speed, boss level is trigered
+                INITIAL_DEVIL_SPEED += 2 # increase game hardness by incrementing initial devil speed
+                DEVIL_SPEED = INITIAL_DEVIL_SPEED
+        
+        # handling boss drawing here
+        if boss_level:
+            # right-left and gradual downward movement
+            if boss.x > WIDTH:
+                boss_right = False
+                boss.y += BOSS_HEIGHT//2
+                BOSS_SPEED += 1
+            elif boss.x < -BOSS_WIDTH:
+                boss_right = True
+                boss.y += BOSS_HEIGHT//2
+                BOSS_SPEED += 1
+
+            # collisions are handled above
+            
+            # detect if boss goes vertically out of the screen, triggering game over
+            if boss.y > HEIGHT:
+                break
+
+            if boss_right:
+                boss.x += BOSS_SPEED
+            else:
+                boss.x -= BOSS_SPEED
+
+            window.blit(BOSS, (boss.x, boss.y))
+            bosshealth = FONT.render(f"Boss Health: {BOSS_HEALTH}", 1, WHITE)
+            window.blit( bosshealth, (WIDTH - bosshealth.get_width() - 10, 40) )
 
         pygame.display.update() # update the actual display
-
-        if DEVIL_SPEED >= MAX_DEVIL_SPEED: # if devil speed reaches max devil speed, boss level is trigered
-            INITIAL_DEVIL_SPEED += 2 # increase game hardness by incrementing initial devil speed
-            DEVIL_SPEED = INITIAL_DEVIL_SPEED
-            #boss_level = True
         
-        if health == 0:
+        if health <= 0:
             break
     
+    # GAME OVER screen
     window.fill((0,0,0))
     window.blit(GAME_OVER, (0,0))
     pygame.display.update()
