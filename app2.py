@@ -8,7 +8,9 @@ RED = (255, 0, 0)
 
 # loading assets
 SWORD_WIDTH, SWORD_HEIGHT = 100, 100
-SWORD_IMAGE = pygame.image.load(os.path.join("Assets", "sword.png"))
+SWORD_IMAGE = pygame.transform.rotate(
+    pygame.image.load(os.path.join("Assets", "fantasy-sword.png")),
+    90)
 
 LEFT_SWORD = pygame.transform.scale(SWORD_IMAGE, (SWORD_WIDTH, SWORD_HEIGHT))
 RIGHT_SWORD = pygame.transform.scale(
@@ -21,7 +23,13 @@ DEVIL_IMAGE = pygame.image.load(os.path.join("Assets", "devil.png"))
 DEVIL = pygame.transform.scale(
     DEVIL_IMAGE,
     (DEVIL_WIDTH, DEVIL_HEIGHT))
-DEVIL_SPEED = 7
+INITIAL_DEVIL_SPEED = 7
+DEVIL_SPEED = INITIAL_DEVIL_SPEED
+MAX_DEVIL_SPEED = DEVIL_SPEED + 30
+
+# custom pygame events
+DEVIL_HIT = pygame.USEREVENT + 1
+DEVIL_MISS = pygame.USEREVENT + 2
 
 # initialize pygame
 pygame.init()
@@ -47,6 +55,8 @@ cap.set(4, 720)  # height
 colorforstickman = (7, 242, 207)
 
 score = 0 # game score
+
+health = 10 # miss the devils 10 times and its game over
 
 
 leftwrist_x, leftwrist_y = 0, 0 # making these global because they're needed for swords
@@ -114,8 +124,46 @@ def draw_stickman():
         pygame.draw.circle(window, RED, (rightwrist_x, rightwrist_y), 10) # right hand
         pygame.draw.circle(window, RED, (leftwrist_x, leftwrist_y), 10) # left hand
 
+
+def draw_window(left_sword, right_sword, devil, devil_right):
+    # draw health bar
+    global health
+    health_bar = pygame.Rect(0, HEIGHT - 10, int(WIDTH * health/10), 10)
+    pygame.draw.rect(window, RED, health_bar)
+
+    # draw stickman
+    draw_stickman()
+
+    # draw swords
+    left_sword.x = leftwrist_x - 10
+    left_sword.y = leftwrist_y - SWORD_HEIGHT + 10
+    right_sword.x = rightwrist_x - SWORD_WIDTH + 10
+    right_sword.y = rightwrist_y - SWORD_HEIGHT + 10
+    window.blit(LEFT_SWORD, (left_sword.x, left_sword.y))
+    window.blit(RIGHT_SWORD, (right_sword.x, right_sword.y))
+
+    # draw devil
+    if devil_right:
+        devil.x += DEVIL_SPEED
+    else:
+        devil.x -= DEVIL_SPEED
+    window.blit(DEVIL, (devil.x, devil.y))
+
+
+def devil_collision_detect(devil, left_sword, right_sword):
+    if devil.colliderect(left_sword) or devil.colliderect(right_sword):
+        pygame.event.post(
+            pygame.event.Event(DEVIL_HIT)
+        )
+
+    elif devil.x > WIDTH or devil.x < -DEVIL_WIDTH:
+        pygame.event.post(
+            pygame.event.Event(DEVIL_MISS)
+        )
+
+
 def main():
-    global score, DEVIL_SPEED
+    global score, health, DEVIL_SPEED, MAX_DEVIL_SPEED, INITIAL_DEVIL_SPEED
 
     draw_stickman()
 
@@ -136,45 +184,52 @@ def main():
                 start = False
                 pygame.quit()
 
-            if event.type == pygame.KEYDOWN:
+            if event.type == pygame.KEYDOWN: # press Q to force quit game
                 if event.key == pygame.K_q:
                     running = False
+            
+            if event.type == DEVIL_HIT: # handle devil hit sword event
+                if random.randint(0,1):
+                    devil.x = -DEVIL_WIDTH
+                    devil_right = True
+                else:
+                    devil.x = WIDTH
+                    devil_right = False
+        
+                devil.y = random.randrange(0, 351)
+
+                score += 1
+                DEVIL_SPEED += 2 # increase devil speed with every collision
+            
+            if event.type == DEVIL_MISS: # same as DEVIL_HIT, but reduce health only
+                health -= 1
+
+                if random.randint(0,1):
+                    devil.x = -DEVIL_WIDTH
+                    devil_right = True
+                else:
+                    devil.x = WIDTH
+                    devil_right = False
+        
+                devil.y = random.randrange(0, 351)
+
+                DEVIL_SPEED += 2 # increase devil speed with every collision
+
 
         window.fill((0,0,0)) # clearing the pygame display
 
-        # draw stickman
-        draw_stickman()
-
-        # draw swords
-        left_sword.x = leftwrist_x - 10
-        left_sword.y = leftwrist_y - SWORD_HEIGHT + 10
-        right_sword.x = rightwrist_x - SWORD_WIDTH + 10
-        right_sword.y = rightwrist_y - SWORD_HEIGHT + 10
-        window.blit(LEFT_SWORD, (left_sword.x, left_sword.y))
-        window.blit(RIGHT_SWORD, (right_sword.x, right_sword.y))
-
-        # draw devil
-        if devil_right:
-            devil.x += DEVIL_SPEED
-        else:
-            devil.x -= DEVIL_SPEED
-        window.blit(DEVIL, (devil.x, devil.y))
+        draw_window(left_sword, right_sword, devil, devil_right)
 
         pygame.display.update() # update the actual display
     
         # handle collision with devil
-        if devil.colliderect(left_sword) or devil.colliderect(right_sword) or devil.x > WIDTH or devil.x < -DEVIL_WIDTH:
-            if random.randint(0,1):
-                devil.x = -DEVIL_WIDTH
-                devil_right = True
-            else:
-                devil.x = WIDTH
-                devil_right = False
-            
-            devil.y = random.randrange(0, 351)
+        devil_collision_detect(devil, left_sword, right_sword)
 
-            score += 1
-            DEVIL_SPEED += 3 # increase devil speed with every collision
+        if DEVIL_SPEED >= MAX_DEVIL_SPEED: # if devil speed reaches max devil speed, boss level is trigered
+            INITIAL_DEVIL_SPEED += 1 # increase game hardness by incrementing initial devil speed
+            DEVIL_SPEED = INITIAL_DEVIL_SPEED
+            #boss_level = True
+            
 
 
 if __name__ == "__main__":
