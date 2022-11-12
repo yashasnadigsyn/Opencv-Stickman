@@ -39,6 +39,7 @@ DEVIL_MISS = pygame.USEREVENT + 2
 
 # initialize pygame
 pygame.init()
+pygame.font.init()
 # create pygame window
 WIDTH, HEIGHT = 1280, 720
 window = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -48,6 +49,12 @@ pygame.mouse.set_visible(False) # hide mouse
 # Initialize Clock for FPS
 FPS = 30
 clock = pygame.time.Clock()
+# initialize pygame font
+STORYFONT = pygame.font.Font(os.path.join("Assets", "font", "PixelScriptRegular-4B83W.ttf"), 30)
+with open("story.txt", "r") as f:
+    story_text = f.read().split('\n')
+story_pages = [STORYFONT.render(page, 1, WHITE) for page in story_text]
+#story = STORYFONT.render(story_text, 1, WHITE)
 
 # mediapipe module load for pose
 mpPose = mp.solutions.pose
@@ -75,7 +82,7 @@ rightwrist_x, rightwrist_y = 0, 0
 middleshoulder_x, middleshoulder_y = 0, 0 # these are required for the player body collision rects
 nose_x, nose_y = 0, 0
 lefthip_x, lefthip_y = 0, 0
-def draw_stickman():
+def draw_stickman(): # tracks movements and draws stickman
     global leftwrist_x, leftwrist_y
     global rightwrist_x, rightwrist_y
     global middleshoulder_x, middleshoulder_y
@@ -145,7 +152,7 @@ def draw_stickman():
 
 
 def draw_window(left_sword, right_sword, devil, devil_right):
-    # draw health bar
+    # draw health hearts
     global health
 
     heart_padding_x = 0
@@ -212,7 +219,27 @@ def devil_collision_detect(devil, left_sword, right_sword):
 def main():
     global score, health, DEVIL_SPEED, MAX_DEVIL_SPEED, INITIAL_DEVIL_SPEED
     global nose_x, nose_y
+    global story_pages
 
+    # story screen
+    page = 0
+    tellstory = True
+    while(tellstory):
+        clock.tick(FPS)
+
+        if page == len(story_pages):
+            window.fill((0,0,0))
+            break
+
+        window.fill((0,0,0))
+
+        window.blit(story_pages[page], (10, 10))
+        pygame.display.update()
+
+        time.sleep(5)
+        page += 1
+
+    # main game loop
     draw_stickman()
 
     left_sword = pygame.Rect(leftwrist_x, leftwrist_y - SWORD_HEIGHT, SWORD_WIDTH, SWORD_HEIGHT)
@@ -221,8 +248,8 @@ def main():
     devil = pygame.Rect(0, 350, DEVIL_WIDTH, DEVIL_HEIGHT)
     devil.x = -DEVIL_WIDTH
     devil_right = True # to track if devil is moving right or left
-
     running = True
+
     while (running):
         clock.tick(FPS)
 
