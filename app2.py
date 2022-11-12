@@ -56,6 +56,12 @@ SCOREFONT = pygame.font.Font(os.path.join("Assets", "font", "OpenSans-VariableFo
 with open("story.txt", "r") as f:
     story_text = f.read().split('\n')
 story_pages = [FONT.render(page, 1, WHITE) for page in story_text]
+# game over screen
+GAME_OVER = pygame.transform.scale(
+    pygame.image.load(os.path.join("Assets", "game_over.png")),
+    (WIDTH, HEIGHT)
+)
+
 
 # mediapipe module load for pose
 mpPose = mp.solutions.pose
@@ -312,7 +318,11 @@ def main():
         
         if health == 0:
             break
-            
+    
+    window.fill((0,0,0))
+    window.blit(GAME_OVER, (0,0))
+    pygame.display.update()
+    time.sleep(5)
 
 
 if __name__ == "__main__":
