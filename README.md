@@ -37,10 +37,10 @@ python app2.py
 
 ## TODO:
 - [x] a way for the demons to slow down after a certain speed is reached, and do _something_
-- [ ] boss fights (?)
+- [x] boss fights (?)
 - [x] player health system
 - [x] score meter (score variable is there. just need meter)
-- [ ] game over screen
+- [x] game over screen
 - [ ] Provide Windows executables
 
 ## Credits
