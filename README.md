@@ -33,7 +33,8 @@ python app2.py
 ```
 
 ## Instructions
-- press Q to exit
+You just need to avoid the demons and hit them with the swords. There aren't any menus or controls (for now at least). There's just one:  
+pressing the **Q** key force-exits the game.
 
 ## TODO:
 - [x] a way for the demons to slow down after a certain speed is reached, and do _something_
