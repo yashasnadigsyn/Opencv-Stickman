@@ -13,7 +13,6 @@ How about doing exercise while playing games?
 
 TheAiPeople bring you a stickman based game where you can play the game using your whole body.  
 
-
 ## First run
 ```bash
 git clone https://github.com/yashasnadigsyn/Opencv-Stickman/tree/main
@@ -35,14 +34,6 @@ python app2.py
 ## Instructions
 You just need to avoid the demons and hit them with the swords. There aren't any menus or controls (for now at least). There's just one:  
 pressing the **Q** key force-exits the game.
-
-## TODO:
-- [x] a way for the demons to slow down after a certain speed is reached, and do _something_
-- [x] boss fights (?)
-- [x] player health system
-- [x] score meter (score variable is there. just need meter)
-- [x] game over screen
-- [ ] Provide Windows executables
 
 ## Credits
 - Background Track "The Black Waltz" by Scott Buckley
