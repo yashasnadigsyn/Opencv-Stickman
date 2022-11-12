@@ -5,6 +5,7 @@ import mediapipe as mp
 
 # color codes
 RED = (255, 0, 0)
+WHITE = (255, 255, 255)
 
 # loading assets
 SWORD_WIDTH, SWORD_HEIGHT = 100, 100
@@ -37,7 +38,8 @@ pygame.init()
 WIDTH, HEIGHT = 1280, 720
 window = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Stickman-Mediapipe")
-pygame.display.toggle_fullscreen()
+pygame.display.toggle_fullscreen() # go fullscreen
+pygame.mouse.set_visible(False) # hide mouse
 # Initialize Clock for FPS
 FPS = 30
 clock = pygame.time.Clock()
@@ -59,11 +61,17 @@ score = 0 # game score
 health = 10 # miss the devils 10 times and its game over
 
 
-leftwrist_x, leftwrist_y = 0, 0 # making these global because they're needed for swords
+leftwrist_x, leftwrist_y = 0, 0 # making these global because they're needed for swords AND player body collision rects
 rightwrist_x, rightwrist_y = 0, 0
+middleshoulder_x, middleshoulder_y = 0, 0 # these are required for the player body collision rects
+nose_x, nose_y = 0, 0
+lefthip_x, lefthip_y = 0, 0
 def draw_stickman():
     global leftwrist_x, leftwrist_y
     global rightwrist_x, rightwrist_y
+    global middleshoulder_x, middleshoulder_y
+    global nose_x, nose_y
+    global lefthip_x, lefthip_y
 
     # pose tracking
     success, image = cap.read()
@@ -151,19 +159,45 @@ def draw_window(left_sword, right_sword, devil, devil_right):
 
 
 def devil_collision_detect(devil, left_sword, right_sword):
+    # player's body collision vars
+    global nose_x, nose_y
+    global middleshoulder_x, middleshoulder_y
+
+    # checking if devil collides with either sword
     if devil.colliderect(left_sword) or devil.colliderect(right_sword):
         pygame.event.post(
             pygame.event.Event(DEVIL_HIT)
         )
-
+    
+    # checking if devil goes off the screen
     elif devil.x > WIDTH or devil.x < -DEVIL_WIDTH:
         pygame.event.post(
             pygame.event.Event(DEVIL_MISS)
         )
 
+    # devil collision with player's face, arms or neck
+    # face
+    face = pygame.Rect(nose_x - 50, nose_y - 50, 100, 100)
+    #pygame.draw.rect(window, WHITE, face, 1)
+
+    if devil.colliderect(face):
+        pygame.event.post(
+            pygame.event.Event(DEVIL_MISS) # can be used because DEVIL_MISS reduces health and respawns a devil
+        )
+    
+    # neck and arms
+    hit_neck_or_arms = devil.clipline((nose_x, nose_y), (middleshoulder_x, middleshoulder_y)) or devil.clipline((middleshoulder_x, middleshoulder_y), (leftwrist_x, leftwrist_y)) or devil.clipline((middleshoulder_x, middleshoulder_y), (rightwrist_x, rightwrist_y))
+
+    if hit_neck_or_arms:
+        pygame.event.post(
+            pygame.event.Event(DEVIL_MISS)
+        )
+    
+
 
 def main():
     global score, health, DEVIL_SPEED, MAX_DEVIL_SPEED, INITIAL_DEVIL_SPEED
+    global nose_x, nose_y
 
     draw_stickman()
 
@@ -217,16 +251,17 @@ def main():
 
 
         window.fill((0,0,0)) # clearing the pygame display
-
+    
+        # draws the whole game window
         draw_window(left_sword, right_sword, devil, devil_right)
 
-        pygame.display.update() # update the actual display
-    
-        # handle collision with devil
+        # detect collisions with the devil and post HIT or MISS events
         devil_collision_detect(devil, left_sword, right_sword)
 
+        pygame.display.update() # update the actual display
+
         if DEVIL_SPEED >= MAX_DEVIL_SPEED: # if devil speed reaches max devil speed, boss level is trigered
-            INITIAL_DEVIL_SPEED += 1 # increase game hardness by incrementing initial devil speed
+            INITIAL_DEVIL_SPEED += 2 # increase game hardness by incrementing initial devil speed
             DEVIL_SPEED = INITIAL_DEVIL_SPEED
             #boss_level = True
             
