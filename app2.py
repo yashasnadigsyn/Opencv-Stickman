@@ -70,6 +70,11 @@ with open("story.txt", "r") as f:
     story_text = f.read().split('\n')
 story_pages = [FONT.render(page, 1, WHITE) for page in story_text]
 
+# music
+pygame.mixer.init()
+pygame.mixer.music.load(os.path.join("Assets", "music", "The-Black-Waltz__Scott-Buckley.mp3"))
+pygame.mixer.music.play()
+
 # game over screen
 GAME_OVER = pygame.transform.scale(
     pygame.image.load(os.path.join("Assets", "game_over.png")),
