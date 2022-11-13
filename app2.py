@@ -290,7 +290,7 @@ def main():
 
         window.fill((0,0,0))
 
-        window.blit(story_pages[page], (10, 10))
+        window.blit(story_pages[page], (100, HEIGHT//2 - story_pages[page].get_height()))
         pygame.display.update()
 
         time.sleep(3.5)
